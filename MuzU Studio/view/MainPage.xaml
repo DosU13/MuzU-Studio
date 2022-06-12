@@ -112,12 +112,12 @@
                                       ItemContainerStyle="{StaticResource ListViewFitWidth}"/>
                             <Grid Grid.Row="1">
                                 <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <Button Grid.Column="0" HorizontalAlignment="Center" Width="110"
-                                        Content="New" Margin="5"
+                                        Content="New" Margin="5" Visibility="Collapsed"
                                         Click="ListViewModelAddNew_Click"/>
                                 <Button Grid.Column="1" HorizontalAlignment="Center" Width="110"
                                         Content="Midi(Simple)" Margin="5"/>

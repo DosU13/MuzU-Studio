@@ -99,9 +99,9 @@
             <Button Grid.Row="2" Grid.Column="1"
                     Content="Merge" Click="Merge_Click"/>
         </Grid>
-        <TextBlock Text="Normalize"
+        <TextBlock Text="Normalize" Visibility="Collapsed"
                    Style="{StaticResource TinyTextStyle}"/>
-        <Grid>
+        <Grid Visibility="Collapsed">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>

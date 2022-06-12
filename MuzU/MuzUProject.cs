@@ -13,6 +13,7 @@ namespace MuzU
 {
     public class MuzUProject
     {
+        public string Name { get; set; }
         public MuzUData data;
 
         public MuzUProject() => data = new MuzUData();

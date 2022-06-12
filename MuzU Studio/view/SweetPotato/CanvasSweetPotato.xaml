@@ -27,7 +27,7 @@
         <Button Grid.Column="1" Content="🔊"
                 Click="Music_Click" Margin="5"/>
         <TextBlock Grid.Column="2" 
-                   Text="Music Allign:"
+                   Text="Music Offset:"
                    VerticalAlignment="Center"
                    Margin="25,0,0,0"/>
         <TextBox Grid.Column="3"
