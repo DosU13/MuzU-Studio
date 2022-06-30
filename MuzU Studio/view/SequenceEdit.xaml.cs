@@ -1,4 +1,5 @@
-﻿using MuzU_Studio.viewmodel;
+﻿using MuzU_Studio.util;
+using MuzU_Studio.viewmodel;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,16 +21,16 @@ namespace MuzU_Studio.view
 {
     public sealed partial class SequenceEdit : UserControl
     {
-        private SequenceViewModel _sequenceViewModel = null;
-        internal SequenceViewModel ViewModelEdit
+        private SequenceViewModel _sequenceVM = null;
+        internal SequenceViewModel SequenceVM
         {
-            get { return _sequenceViewModel; }
+            get { return _sequenceVM; }
             set
             {
                 PropertyListView.SelectionChanged -= PropertyListView_SelectionChanged;
-                _sequenceViewModel = value;
+                _sequenceVM = value;
                 Bindings.Update();
-                PropertyListView.SelectedIndex = _sequenceViewModel?.SelectedPropertyIndex??-1;
+                PropertyListView.SelectedIndex = _sequenceVM?.SelectedPropertyIndex??-1;
                 PropertyListView.SelectionChanged += PropertyListView_SelectionChanged;
             }
         }
@@ -40,19 +41,23 @@ namespace MuzU_Studio.view
             PropertyListView.SelectionChanged += PropertyListView_SelectionChanged;
         }
 
+        internal IRefresh IRefresh;
+
         private void PropertyListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            ViewModelEdit.SelectedPropertyIndex = PropertyListView.SelectedIndex;
+            SequenceVM.SelectedPropertyIndex = PropertyListView.SelectedIndex;
         }
 
         private void Merge_Click(object sender, RoutedEventArgs e)
         {
-            ViewModelEdit.Merge(MergeAccordingToProperty.SelectedIndex, MergeType.SelectedIndex);
+            SequenceVM.Merge(MergeAccordingToProperty.SelectedIndex, MergeType.SelectedIndex);
+            IRefresh.Refresh();
         }
 
         private void Normalize_Click(object sender, RoutedEventArgs e)
         {
-            ViewModelEdit.Normalize(NormalizeTheProperty.SelectedIndex, int.Parse(NormalizeGroupByBeats.Text));
+            SequenceVM.Normalize(NormalizeTheProperty.SelectedIndex, int.Parse(NormalizeGroupByBeats.Text));
+            IRefresh.Refresh();
         }
     }
 }

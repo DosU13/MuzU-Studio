@@ -24,6 +24,7 @@ using MuzU_Studio.Model;
 using MuzU_Studio.viewmodel;
 using Windows.UI.Core.Preview;
 using Windows.Storage.AccessCache;
+using MuzU_Studio.util;
 
 
 // The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
@@ -33,12 +34,13 @@ namespace MuzU_Studio
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class MainPage : Page
+    public sealed partial class MainPage : Page, IRefresh
     {
         public MainPage()
         {
             this.InitializeComponent();
 
+            SequenceEdit.IRefresh = this;
             _ = LoadLocalSettingsAsync();
             SystemNavigationManagerPreview.GetForCurrentView().CloseRequested += OnWindowClose;
         }
@@ -56,7 +58,7 @@ namespace MuzU_Studio
                 //SequenceEdit.BeatLengthShareData = this;
 
                 SweetPotato.SequenceVM = MainVM.SelectedSequence;
-                SequenceEdit.ViewModelEdit = MainVM.SelectedSequence;
+                SequenceEdit.SequenceVM = MainVM.SelectedSequence;
                 Bindings.Update();
             } 
         }
@@ -68,7 +70,7 @@ namespace MuzU_Studio
         private void SequenceSelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             SweetPotato.SequenceVM = MainVM.SelectedSequence;
-            SequenceEdit.ViewModelEdit = MainVM.SelectedSequence;
+            SequenceEdit.SequenceVM = MainVM.SelectedSequence;
             Bindings.Update();
         }
 
@@ -82,14 +84,29 @@ namespace MuzU_Studio
         private async void NewMidiSimple_Click(object sender, RoutedEventArgs e)
         {
             if (existProject) if (!(await SaveWorkDialog())) return;
+            await PickMidiAndImport(true, true);
             projectFile = null;
         }
 
         private async void NewMidiRaw_Click(object sender, RoutedEventArgs e)
         {
             if (existProject) if (!(await SaveWorkDialog())) return;
-            await PickMidiAndImport();
+            await PickMidiAndImport(true, false);
             projectFile = null;
+        }
+
+        private async void AddMidiSimple_Click(object sender, RoutedEventArgs e)
+        {
+            if (!existProject) return;
+            await PickMidiAndImport(false, true);
+            Project = Project;
+        }
+
+        private async void AddMidiRaw_Click(object sender, RoutedEventArgs e)
+        {
+            if (!existProject) return;
+            await PickMidiAndImport(false, false);
+            Project = Project;
         }
 
         private async void Open_Click(object sender, RoutedEventArgs e)
@@ -195,7 +212,7 @@ namespace MuzU_Studio
             return false;
         }
 
-        private async Task PickMidiAndImport()
+        private async Task PickMidiAndImport(bool IsNew, bool IsSimple)
         {
             var picker = new Windows.Storage.Pickers.FileOpenPicker();
             picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
@@ -207,9 +224,17 @@ namespace MuzU_Studio
             
             using (IRandomAccessStream fileStream = await file.OpenAsync(FileAccessMode.Read))
             {
-                MuzUProject newProject = MidiImporter.Import(fileStream.AsStream(), file.DisplayName);
-                Project = newProject;
-                projectFile = null;
+                if (IsNew)
+                {
+                    MuzUProject newProject = MidiImporter.Import(fileStream.AsStream(), file.DisplayName, IsSimple);
+                    Project = newProject;
+                    projectFile = null;
+                }
+                else
+                {
+                    Project.data.TimingSequences.AddRange(MidiImporter.ImportTimingSequences(
+                        MidiFile.Read(fileStream.AsStream()), file.DisplayName, IsSimple));
+                }
             }
             Bindings.Update();
         }
@@ -240,6 +265,19 @@ namespace MuzU_Studio
                 IStorageFile _projectFile = await StorageApplicationPermissions.FutureAccessList.GetFileAsync(faToken);
                 await LoadFromFile(_projectFile);
             }
+        }
+
+        public void Refresh()
+        {
+            if (MainVM == null) return;
+            SweetPotato.MainVM = MainVM;
+            Visualizer.MainVM = MainVM;
+            Bindings.Update();
+        }
+
+        private void Page_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            Refresh();
         }
     }
 }

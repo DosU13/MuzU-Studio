@@ -24,7 +24,7 @@
     <AppxBundle>Always</AppxBundle>
     <AppxBundlePlatforms>x86|x64|arm</AppxBundlePlatforms>
     <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
-    <PackageCertificateThumbprint>BBC78822F189F83FFF7E1F0EC439E94DA1B19B65</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>D6975A4ED1C1041306DF0B489A817B6E9AAAC81A</PackageCertificateThumbprint>
     <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
@@ -128,6 +128,10 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Model\MidiImporter.cs" />
+    <Compile Include="util\BindableBase.cs" />
+    <Compile Include="util\IRefresh.cs" />
+    <Compile Include="util\NotVisibilityConverter.cs" />
+    <Compile Include="util\VisibilityConverter.cs" />
     <Compile Include="util\TimingValueTypeConverter.cs" />
     <Compile Include="util\WindowTitle.cs" />
     <Compile Include="viewmodel\MainViewModel.cs" />

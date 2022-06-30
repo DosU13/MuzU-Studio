@@ -12,6 +12,8 @@
 
     <UserControl.Resources>
         <util:TimingValueTypeConverter x:Key="TimingValueTypeConverter" />
+        <util:VisibilityConverter x:Key="VisibilityConverter" />
+        <util:NotVisibilityConverter x:Key="NotVisibilityConverter" />
         <DataTemplate x:Key="PropertyTemplate"
                       x:DataType="data:TimingTemplateProperty">
             <Grid>
@@ -22,7 +24,7 @@
                 <TextBox Text="{x:Bind Name, Mode=TwoWay}" HorizontalAlignment="Left"/>
                 <TextBlock Grid.Column="1" 
                            Text="{x:Bind Type, Mode=TwoWay, Converter={StaticResource TimingValueTypeConverter}}"/>
-                <Button Grid.Column="1" Content="🗙" 
+                <Button Grid.Column="1" Content="🗙" Visibility="Collapsed"
                         HorizontalAlignment="Right"/>
             </Grid>
         </DataTemplate>
@@ -63,14 +65,14 @@
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <TextBlock Text="Custom Length"/>
+            <TextBlock Text="Length" Margin="10"/>
             <ToggleSwitch Grid.Column="1"
-                          IsOn="{x:Bind ViewModelEdit.LengthEnabled, Mode=TwoWay}"/>
+                          IsOn="{x:Bind SequenceVM.LengthEnabled, Mode=TwoWay}"/>
         </Grid>
         <ListView x:Name="PropertyListView"
                   ItemTemplate="{StaticResource PropertyTemplate}"
                   ItemContainerStyle="{StaticResource ListViewFitWidth}"
-                  ItemsSource="{x:Bind ViewModelEdit.Properties}"
+                  ItemsSource="{x:Bind SequenceVM.Properties}"
                   SelectionMode="Single"/>
         <TextBlock Text="Merge Chords"
                    Style="{StaticResource TinyTextStyle}"/>
@@ -86,7 +88,7 @@
             </Grid.ColumnDefinitions>
             <TextBlock Text="According to Property" VerticalAlignment="Center"/>
             <ComboBox Grid.Column="1" x:Name="MergeAccordingToProperty"
-                      ItemsSource="{x:Bind ViewModelEdit.Properties}"
+                      ItemsSource="{x:Bind SequenceVM.Properties}"
                       ItemTemplate="{StaticResource ComboBoxItemTemplateTimingTemplateProperty}"/>
             <TextBlock Grid.Row="1" VerticalAlignment="Center"
                        Text="Merge"/>
@@ -113,7 +115,7 @@
             </Grid.ColumnDefinitions>
             <TextBlock Text="Values of Property" VerticalAlignment="Center"/>
             <ComboBox Grid.Column="1" x:Name="NormalizeTheProperty"
-                      ItemsSource="{x:Bind ViewModelEdit.Properties}"
+                      ItemsSource="{x:Bind SequenceVM.Properties}"
                       ItemTemplate="{StaticResource ComboBoxItemTemplateTimingTemplateProperty}"/>
             <TextBlock Grid.Row="1" VerticalAlignment="Center"
                        Text="Group by Beats"/>
@@ -125,6 +127,27 @@
             </TextBox>
             <Button Grid.Row="2" Grid.Column="1"
                     Content="Normalize" Click="Normalize_Click"/>
+        </Grid>
+
+        <TextBlock Text="Lyrics"
+                   Style="{StaticResource TinyTextStyle}"/>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Button Visibility="{x:Bind SequenceVM.LyricsExist, Mode=OneWay, 
+                                 Converter={StaticResource NotVisibilityConverter}}"
+                    Click="{x:Bind SequenceVM.CreateLyrics}" Content="Add Lyrics" Margin="5"/>
+            <Button Visibility="{x:Bind SequenceVM.LyricsExist, Mode=OneWay,
+                                 Converter={StaticResource VisibilityConverter}}"
+                    Content="After White Space" 
+                    Click="{x:Bind SequenceVM.AddAfterWhiteSpace}"/>
+            <TextBox Grid.Row="1" 
+                     Text="{x:Bind SequenceVM.Lyrics, Mode=TwoWay}"
+                     Visibility="{x:Bind SequenceVM.LyricsExist, Mode=OneWay,  
+                                  Converter={StaticResource VisibilityConverter}}"
+                     AcceptsReturn="True"/>
         </Grid>
     </StackPanel>
 </UserControl>

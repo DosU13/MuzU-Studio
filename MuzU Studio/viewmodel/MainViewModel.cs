@@ -71,10 +71,10 @@ namespace MuzU_Studio.viewmodel
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    projectSequences.Add((e.NewItems[0] as SequenceViewModel).Model);
+                    projectSequences.Add((e.NewItems[0] as SequenceViewModel).Data);
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    projectSequences.Remove((e.OldItems[0] as SequenceViewModel).Model);
+                    projectSequences.Remove((e.OldItems[0] as SequenceViewModel).Data);
                     break;
             }
         }
@@ -106,7 +106,7 @@ namespace MuzU_Studio.viewmodel
                 {
                     return (Project.data.MicrosecondsPerQuarterNote ?? 250000L) * 4;
                 }
-                else throw new NotImplementedException();
+                else return (Project.data.MicrosecondsPerQuarterNote ?? 250000L) * 4;
             }
         }
     }

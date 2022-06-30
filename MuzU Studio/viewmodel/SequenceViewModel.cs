@@ -3,31 +3,34 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.UI.Popups;
+using Windows.UI.Xaml;
 
 namespace MuzU_Studio.viewmodel
 {
-    internal class SequenceViewModel
+    internal class SequenceViewModel: BindableBase
     {
-        public TimingSequence Model;
+        public readonly TimingSequence Data;
         public SequenceViewModel(TimingSequence timingSequence, System.Action<SequenceViewModel> removeSequence)
         {
-            Model = timingSequence;
+            Data = timingSequence;
             remove = removeSequence;
+            Lyrics = Data.Lyrics;
         }
 
-        public string Name { get => Model.UniqueName; set => Model.UniqueName = value; }
+        public string Name { get => Data.UniqueName; set => Data.UniqueName = value; }
 
         private System.Action<SequenceViewModel> remove;
 
         public void Remove() { remove.Invoke(this); }
 
-        public List<TimingTemplateProperty> Properties => Model.TimingTemplate.Properties;
+        public List<TimingTemplateProperty> Properties => Data.TimingTemplate.Properties;
         internal bool LengthEnabled
         {
-            get => Model.TimingTemplate.LengthEnabled;
-            set => Model.TimingTemplate.LengthEnabled = value;
+            get => Data.TimingTemplate.LengthEnabled;
+            set => Data.TimingTemplate.LengthEnabled = value;
         }
         private int _selectedPropertyIndex = 0;
         public int SelectedPropertyIndex
@@ -43,7 +46,7 @@ namespace MuzU_Studio.viewmodel
             }
         }
 
-        private List<TimingItem> TimingItems => Model.TimingItems;
+        private List<TimingItem> TimingItems => Data.TimingItems;
         private ValueType SelectedPropertyType => Properties[SelectedPropertyIndex].Type;
 
         public IEnumerable<KeyValuePair<double, long>> GetNormValuesAtTimeWithDur(long timeMicroSec)
@@ -62,7 +65,7 @@ namespace MuzU_Studio.viewmodel
                 _ = (new MessageDialog("Is already Melodic")).ShowAsync();
                 return;
             }
-            Model.TimingTemplate.Properties.Add(new TimingTemplateProperty("Chord", ValueType.Integer));
+            Data.TimingTemplate.Properties.Add(new TimingTemplateProperty("Chord", ValueType.Integer));
 
             if (mergeType != 2)
             {
@@ -82,9 +85,9 @@ namespace MuzU_Studio.viewmodel
             }
             else
             {
-                foreach (var t in Model.TimingTemplate.Properties) t.Type = ValueType.Decimal;
+                foreach (var t in Data.TimingTemplate.Properties) t.Type = ValueType.Decimal;
                 List<TimingItem> oldTimingItems = new List<TimingItem>(TimingItems);
-                Model.TimingItems = new List<TimingItem>();
+                Data.TimingItems = new List<TimingItem>();
                 foreach (var g in oldTimingItems.GroupBy(it => it.Time))
                 {
                     var newTi = new TimingItem();
@@ -112,6 +115,45 @@ namespace MuzU_Studio.viewmodel
         internal void Normalize(int selectedIndex, int v)
         {
             throw new System.NotImplementedException();
+        }
+
+        internal bool LyricsExist => Lyrics != null;
+
+        private string _lyrics = null;
+        internal string Lyrics { get => _lyrics;
+            set
+            {
+                if(value == "") SetProperty(ref _lyrics, null);
+                else SetProperty(ref _lyrics, value);
+                OnPropertyChanged(nameof(LyricsExist));
+                Data.Lyrics = _lyrics;
+                UpdateSyllables();
+            }
+        }
+
+        internal void CreateLyrics() => Lyrics = "Here paste and edit the lyrics";
+
+        internal string[] Syllables;
+        private void UpdateSyllables()
+        {
+            if(Lyrics==null || Lyrics==""){ Syllables = new string[0]; return; }
+            string lyrics = Lyrics;
+            Debug.WriteLine("Here Lyrics to Syllables");
+            lyrics = Regex.Replace(lyrics, @"\s", "");
+            Syllables = lyrics.Split('$');
+        }
+
+        internal void AddAfterWhiteSpace()
+        {
+            var lyrics = Lyrics;
+            for(int i=0; i<lyrics.Length-1; i++)
+            {
+                if (char.IsWhiteSpace(lyrics[i]) && !char.IsWhiteSpace(lyrics[i+1]))
+                {
+                    lyrics = lyrics.Insert(i + 1, "$");
+                }
+            }
+            Lyrics = lyrics;
         }
     }
 }

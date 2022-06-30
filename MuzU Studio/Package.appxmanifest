@@ -10,8 +10,8 @@
 
   <Identity
     Name="840543ba-b11f-400e-93ac-d96712feca58"
-    Publisher="CN=DosU"
-    Version="1.0.1.0" />
+    Publisher="CN=DosU_MuzU"
+    Version="1.0.5.0" />
 
   <mp:PhoneIdentity PhoneProductId="840543ba-b11f-400e-93ac-d96712feca58" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 

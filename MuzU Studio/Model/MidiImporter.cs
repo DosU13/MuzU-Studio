@@ -15,7 +15,7 @@ namespace MuzU_Studio.Model
 {
     internal class MidiImporter
     {
-        internal static MuzUProject Import(Stream stream, string displayName)
+        internal static MuzUProject Import(Stream stream, string displayName, bool IsSimple)
         {
             MidiFile midiFile = MidiFile.Read(stream);
             MuzUProject result = new MuzUProject();
@@ -27,7 +27,7 @@ namespace MuzU_Studio.Model
             CheckTempo(tempoMap);
             data.MicrosecondsPerQuarterNote = microsecondPerQuarterNote??Tempo.Default.MicrosecondsPerQuarterNote;
             data.TimeSignature = timeSignature??"4/4";
-            data.TimingSequences.AddRange(ImportTimingSequences(midiFile, displayName));
+            data.TimingSequences.AddRange(ImportTimingSequences(midiFile, displayName, IsSimple));
             return result;
         }
 
@@ -46,7 +46,7 @@ namespace MuzU_Studio.Model
             }
         }
 
-        private static List<TimingSequence> ImportTimingSequences(MidiFile midiFile, string displayName)
+        internal static List<TimingSequence> ImportTimingSequences(MidiFile midiFile, string displayName, bool IsSimple)
         {
             List<TimingSequence> result = new List<TimingSequence>();
             TempoMap tempoMap = midiFile.GetTempoMap();
@@ -62,11 +62,12 @@ namespace MuzU_Studio.Model
                     TimingTemplate template = new TimingTemplate();
                     template.LengthEnabled = true;
                     template.Properties = new List<TimingTemplateProperty>()
+                        {new TimingTemplateProperty("NoteNumber", MuzU.data.ValueType.Integer)};
+                    if (!IsSimple)
                     {
-                        new TimingTemplateProperty("NoteNumber", MuzU.data.ValueType.Integer),
-                        new TimingTemplateProperty("Velocity", MuzU.data.ValueType.Integer),
-                        new TimingTemplateProperty("OffVelocity", MuzU.data.ValueType.Integer)
-                    };
+                        template.Properties.Add(new TimingTemplateProperty("Velocity", MuzU.data.ValueType.Integer));
+                        template.Properties.Add(new TimingTemplateProperty("OffVelocity", MuzU.data.ValueType.Integer));
+                    }
                     timingSequence.TimingTemplate = template;
                     foreach (Note note in trackNotes)
                     {
@@ -79,7 +80,9 @@ namespace MuzU_Studio.Model
                         TimingItem item = new TimingItem();
                         item.Time = metricTime.TotalMicroseconds;
                         item.Length = metricLength.TotalMicroseconds;
-                        item.Values = new List<double>() { (double)note.NoteNumber, (double)note.Velocity, (double)note.OffVelocity };
+                        item.Values = new List<double>() { (double)note.NoteNumber};
+                        if (!IsSimple) { item.Values.Add((double)note.Velocity);
+                                         item.Values.Add((double)note.OffVelocity); }
                         timingSequence.TimingItems.Add(item);
                     }
                     result.Add(timingSequence);

@@ -26,7 +26,7 @@ namespace MuzU_Studio.view.SweetPotato
             InitNotes();
         }
 
-        private List<TimingItem> TimingItems => SequenceVM.Model.TimingItems;
+        private List<TimingItem> TimingItems => SequenceVM.Data.TimingItems;
         private int PropertyIndex => SequenceVM.SelectedPropertyIndex;
 
         private static int TimebarHeight => CanvasSweetPotato.TimebarHeight;
@@ -54,7 +54,7 @@ namespace MuzU_Studio.view.SweetPotato
             LiveNotes = new LiveNote[TimingItems.Count];
             for (int i = 0; i < TimingItems.Count; i++)
             {
-                TimingItem item = SequenceVM.Model.TimingItems[i];
+                TimingItem item = SequenceVM.Data.TimingItems[i];
                 LiveNotes[i] = new LiveNote(item);
             }
         }
@@ -74,16 +74,18 @@ namespace MuzU_Studio.view.SweetPotato
             return (long)(top / HeightPerInteger + minValue);
         }
 
-        public class LiveNote
+        internal class LiveNote
         {
             internal TimingItem TimingItem;
-            public Rectangle Rect;
-            public Point Pos = new Point(0, 0);
-            public bool Selected = false;
-            public LiveNote(TimingItem timingItem)
+            internal Rectangle Rect;
+            internal Point Pos = new Point(0, 0);
+            internal bool Selected = false;
+            internal TextBlock Syllable;
+            internal LiveNote(TimingItem timingItem)
             {
                 TimingItem = timingItem;
                 Rect = new Rectangle();
+                Syllable = new TextBlock();
                 Rect.Fill = new SolidColorBrush(Color.FromArgb(0x88, 0xFF, 0x7B, 0x19));
                 Rect.Stroke = new SolidColorBrush(Color.FromArgb(0xFF, 0x46, 0x1d, 0x00));
                 Rect.StrokeThickness = 2;
@@ -109,11 +111,13 @@ namespace MuzU_Studio.view.SweetPotato
                 if (boardStart <= Pos.X + Rect.Width && Pos.X <= boardEnd && !IsVisible)
                 {
                     canvas.Children.Add(Rect);
+                    canvas.Children.Add(Syllable);
                     IsVisible = true;
                 }
                 else if ((boardStart > Pos.X + Rect.Width || Pos.X > boardEnd) && IsVisible)
                 {
                     canvas.Children.Remove(Rect);
+                    canvas.Children.Remove(Syllable);
                     IsVisible = false;
                 }
                 if (IsVisible)
@@ -121,6 +125,9 @@ namespace MuzU_Studio.view.SweetPotato
                     Canvas.SetLeft(Rect, Pos.X - boardStart);
                     Canvas.SetTop(Rect, Pos.Y + TimebarHeight);
                     Canvas.SetZIndex(Rect, 1);
+                    Canvas.SetLeft(Syllable, Pos.X - boardStart);
+                    Canvas.SetTop(Syllable, Pos.Y + TimebarHeight);
+                    Canvas.SetZIndex(Syllable, 1);
                 }
             }
         }
@@ -148,6 +155,13 @@ namespace MuzU_Studio.view.SweetPotato
             {
                 target.UpdateToCanvas(SweetCanvas, (double)(BoardStartTicks)/TicksPerPixel,
                     (double)BoardStartTicks / TicksPerPixel + CanvasWidth);
+            }
+            if (SequenceVM.LyricsExist)
+            {
+                for (int i = 0; i < LiveNotes.Length && i < SequenceVM.Syllables.Length; i++)
+                {
+                    LiveNotes[i].Syllable.Text = SequenceVM.Syllables[i];
+                }
             }
         }
 

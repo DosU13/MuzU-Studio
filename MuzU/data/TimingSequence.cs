@@ -15,22 +15,25 @@ namespace MuzU.data
         public string UniqueName { get; set; } = DateTime.Now.ToString("yyyyMMddHHmmssfff");
         public TimingTemplate TimingTemplate { get; set; } = new TimingTemplate();
         public List<TimingItem> TimingItems { get; set; } = new List<TimingItem>();
+        public string Lyrics { get; set; } = null;
 
         internal override XElement ToXElement()
         {
-            ThisElement = new XElement("TimingSequence", 
-                            new XElement("UniqueName", UniqueName),
+            ThisElement = new XElement(nameof(TimingSequence), 
+                            new XElement(nameof(UniqueName), UniqueName),
                             TimingTemplate.ToXElement(),
                             XmlConverter.ListToElement(TimingItems));
+            if (Lyrics != null) ThisElement.Add(new XElement(nameof(Lyrics), Lyrics));
             return base.ToXElement();
         }
 
         internal override void LoadFromXElement(XElement xElement)
         {
-            ThisElement = xElement.Element("TimingSequence");
-            UniqueName = ThisElement.Element("UniqueName").Value;
+            ThisElement = xElement.Element(nameof(TimingSequence));
+            UniqueName = ThisElement.Element(nameof(UniqueName)).Value;
             TimingTemplate = new TimingTemplate(ThisElement);
             TimingItems = XmlConverter.ElementToList<TimingItem>(ThisElement);
+            Lyrics = ThisElement.Element(nameof(Lyrics))?.Value;
             base.LoadFromXElement(ThisElement);
         }
     }
